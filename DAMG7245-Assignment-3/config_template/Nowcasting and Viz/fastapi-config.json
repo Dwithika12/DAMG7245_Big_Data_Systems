@@ -1,0 +1,183 @@
+{
+   "openapi": "3.0.0",
+   "info": {
+      "version": "1.0.0",
+      "title": "SEVIR Data Nowcasting",
+      "license": {
+         "name": "MIT"
+      }
+   },
+   "servers": [
+      {
+         "url": "http://sevir-nowcasting.streamlit.io/v1"
+      }
+   ],
+   "paths": {
+      "/nowcast/{img_Id}": {
+         "get": {
+            "summary": "WWF Weather Nowcasting - Pass Image Id to show 1 out of 12 images",
+            "operationId": "predict_Img",
+            "tags": [
+               "predict_Img"
+            ],
+            "parameters": [
+               {
+                  "name": "img_Id",
+                  "in": "query",
+                  "description": "How many items to return at one time (max 100)",
+                  "required": true,
+                  "schema": {
+                     "type": "integer",
+                     "format": "int32"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Webapp for displaying weather data nowcasting",
+                  "headers": {
+                     "x-next": {
+                        "description": "A link to the next page of responses",
+                        "schema": {
+                           "type": "string"
+                        }
+                     }
+                  },
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/nowcast"
+                        }
+                     }
+                  }
+               },
+               "default": {
+                  "description": "unexpected error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/Error",
+                           "x-amazon-apigateway-integration": {
+                              "uri": {
+                                 "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PythonVersionFunction.Arn}/invocations"
+                              },
+                              "passthroughBehavior": "when_no_templates",
+                              "httpMethod": "POST",
+                              "type": "aws_proxy"
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+    "/weatherviz/{state}": 
+          {
+          "get": {
+            "summary": "WWF Weather visualizations - Get weather visualization stats based on state selection",
+            "operationId": "filter_Nowcast",
+            "tags": [
+               "filter_Nowcast"
+            ],
+            "parameters": [
+               {
+                  "name": "state",
+                  "in": "query",
+                  "description": "How many items to return at one time (max 100)",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Webapp for displaying weather data nowcasting",
+                  "headers": {
+                     "x-next": {
+                        "description": "A link to the next page of responses",
+                        "schema": {
+                           "type": "string"
+                        }
+                     }
+                  },
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/weatherviz"
+                        }
+                     }
+                  }
+               },
+               "default": {
+                  "description": "unexpected error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/Error",
+                           "x-amazon-apigateway-integration": {
+                              "uri": {
+                                 "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PythonVersionFunction.Arn}/invocations"
+                              },
+                              "passthroughBehavior": "when_no_templates",
+                              "httpMethod": "POST",
+                              "type": "aws_proxy"
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+        }
+          
+      
+   },
+   "components": {
+      "schemas": {
+         "nowcast": {
+            "required": [
+               "img_Id"
+            ],
+            "properties": {
+               "img_Id": {
+                  "type": "integer"
+               },
+               "tag": {
+                  "type": "string"
+               }
+            }
+         },
+        "weatherviz":
+          {
+              "required": [
+                "state"
+            ],
+            "properties": {
+               "state": {
+                  "type": "string"
+               },
+               "tag": {
+                  "type": "string"
+               }
+            }
+          },
+         "Error": {
+            "required": [
+               "code",
+               "message"
+            ],
+            "properties": {
+               "code": {
+                  "type": "integer",
+                  "format": "int32"
+               },
+               "message": {
+                  "type": "string"
+               }
+            }
+         }
+      }
+   }
+}
